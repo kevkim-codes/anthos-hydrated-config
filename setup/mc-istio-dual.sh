@@ -1,0 +1,147 @@
+
+
+
+# - Create clusters
+# - Install Helm
+# - Create Cert Secrets
+# - Install Istio CRDs
+# - Install Istio
+# - Configure DNS
+
+
+
+#####
+# 
+# Preinstall
+#
+#####
+
+
+
+preinstall_istio () {
+    kubectl create namespace istio-system
+    kubectl apply -f istio-1.1.1/install/kubernetes/helm/helm-service-account.yaml
+    helm init --service-account tiller
+    log "sleeping 20 seconds while Tiller starts up..."; sleep 20;
+    kubectl create secret generic cacerts -n istio-system \
+        --from-file=istio-1.1.1/samples/certs/ca-cert.pem \
+        --from-file=istio-1.1.1/samples/certs/ca-key.pem \
+        --from-file=istio-1.1.1/samples/certs/root-cert.pem \
+        --from-file=istio-1.1.1/samples/certs/cert-chain.pem
+    helm install istio-1.1.1/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system
+}
+
+
+# get istio 1.1.1 
+log "Downloading Istio 1.1.1..."
+wget https://github.com/istio/istio/releases/download/1.1.1/istio-1.1.1-linux.tar.gz
+tar -xzf istio-1.1.1-linux.tar.gz
+rm -r istio-1.1.1-linux.tar.gz 
+
+
+# Cluster 1
+log "Setting up Cluster 1..."
+gcloud config set project $PROJECT_1
+gcloud container clusters get-credentials $CLUSTER_1 --zone $ZONE
+kubectl config use-context $CTX_1
+preinstall_istio
+log "...done with cluster 1."
+
+# Cluster 2
+log "Setting up Cluster 2..."
+gcloud config set project $PROJECT_2
+gcloud container clusters get-credentials $CLUSTER_2 --zone $ZONE
+kubectl config use-context $CTX_2
+preinstall_istio
+log "...done with cluster 2."
+
+
+###########
+#
+#  Install Istio
+#
+###########
+
+
+install_istio () {
+     helm install istio-1.1.1/install/kubernetes/helm/istio --name istio --namespace istio-system \
+     --values istio-1.1.1/install/kubernetes/helm/istio/example-values/values-istio-multicluster-gateways.yaml
+}
+
+# set vars
+ZONE="us-central1-b"
+
+PROJECT_1="${PROJECT_1:?PROJECT_1 env variable must be specified}"
+CLUSTER_1="dual-cluster1"
+CTX_1="gke_${PROJECT_1}_${ZONE}_${CLUSTER_1}"
+
+PROJECT_2="${PROJECT_2:?PROJECT_2 env variable must be specified}"
+CLUSTER_2="dual-cluster2"
+CTX_2="gke_${PROJECT_2}_${ZONE}_${CLUSTER_2}"
+
+# Cluster 1
+log "Installing Istio on Cluster 1..."
+gcloud config set project $PROJECT_1
+gcloud container clusters get-credentials $CLUSTER_1 --zone $ZONE
+kubectl config use-context $CTX_1
+install_istio
+log "...done with cluster 1."
+
+
+# Cluster 2
+log "Installing Istio on Cluster 2..."
+gcloud config set project $PROJECT_2
+gcloud container clusters get-credentials $CLUSTER_2 --zone $ZONE
+kubectl config use-context $CTX_2
+install_istio
+log "...done with cluster 2."
+
+
+########
+#
+#  Configure DNS
+#
+########
+
+
+
+configure_dns () {
+     kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  stubDomains: |
+    {"global": ["$(kubectl get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})"]}
+EOF
+}
+
+# set vars
+ZONE="us-central1-b"
+
+PROJECT_1="${PROJECT_1:?PROJECT_1 env variable must be specified}"
+CLUSTER_1="dual-cluster1"
+CTX_1="gke_${PROJECT_1}_${ZONE}_${CLUSTER_1}"
+
+PROJECT_2="${PROJECT_2:?PROJECT_2 env variable must be specified}"
+CLUSTER_2="dual-cluster2"
+CTX_2="gke_${PROJECT_2}_${ZONE}_${CLUSTER_2}"
+
+# Cluster 1
+log "Configuring DNS on Cluster 1..."
+gcloud config set project $PROJECT_1
+gcloud container clusters get-credentials $CLUSTER_1 --zone $ZONE
+kubectl config use-context $CTX_1
+configure_dns
+log "...done with cluster 1."
+
+
+# Cluster 2
+log "Configuring DNS on Cluster 2..."
+gcloud config set project $PROJECT_2
+gcloud container clusters get-credentials $CLUSTER_2 --zone $ZONE
+kubectl config use-context $CTX_2
+configure_dns
+log "...done with cluster 2."

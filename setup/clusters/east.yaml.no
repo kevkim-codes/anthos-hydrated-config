@@ -1,0 +1,11 @@
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: east
+  namespace: default
+  labels:
+    lifecycle: "prd"
+spec:
+  location:
+    zone: "us-east1-b"
+status: {}

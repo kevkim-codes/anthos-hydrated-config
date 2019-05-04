@@ -1,0 +1,11 @@
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: west
+  namespace: default
+  labels:
+    lifecycle: "dev"
+spec:
+  location:
+    zone: "us-west1-b"
+status: {}

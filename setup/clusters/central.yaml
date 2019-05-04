@@ -1,0 +1,12 @@
+kind: Cluster
+apiVersion: clusterregistry.k8s.io/v1alpha1
+metadata:
+  name: central
+  namespace: default
+  labels:
+    lifecycle: "prd"
+spec:
+  location:
+    zone: "us-central1-b"
+    
+status: {}

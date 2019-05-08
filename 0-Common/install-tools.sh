@@ -22,7 +22,6 @@ export ISTIO_VERSION=1.1.4
 
 ## Install Tools
 mkdir -p $WORK_DIR/bin
-export PATH=$PATH:$WORK_DIR/bin:
 
 echo "### "
 echo "### Begin Tools install"
@@ -35,11 +34,19 @@ mv kubectx $WORK_DIR/bin
 
 
 # Install Helm
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-chmod 700 get_helm.sh
-./get_helm.sh &> /dev/null
-cp /usr/local/bin/helm $WORK_DIR/bin
-rm ./get_helm.sh
+#curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+#chmod 700 get_helm.sh
+#./get_helm.sh &> /dev/null
+#cp /usr/local/bin/helm $WORK_DIR/bin
+#rm ./get_helm.sh
+
+HELM_VERSION=v2.13.0
+wget https://storage.googleapis.com/kubernetes-helm/helm-"$HELM_VERSION"-linux-amd64.tar.gz
+tar -xvzf helm-"$HELM_VERSION"-linux-amd64.tar.gz
+mv linux-amd64/helm $WORK_DIR/bin
+mv linux-amd64/tiller $WORK_DIR/bin
+rm helm-"$HELM_VERSION"-linux-amd64.tar.gz
+rm -rf linux-amd64
 
 
 # Download Istio

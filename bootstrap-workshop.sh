@@ -23,13 +23,13 @@ export WORK_DIR=${WORK_DIR:="${BASE_DIR}/workdir"}
 echo "WORK_DIR set to $WORK_DIR"
 gcloud config set project $PROJECT
 
+source ./0-Common/settings.env
 ./0-Common/install-tools.sh
 ./1-GKE/provision-gke.sh
 ./1-ConnectHub/provision-remote-gce.sh
 kubectx central
 ./2-ConfigManagement/install-config-operator.sh
-./2-ConfigManagement/install-config-sync.sh
 kubectx remote
 ./2-ConfigManagement/install-config-operator.sh
 
-./4-HybridMulticluster/7.1-istio-install.sh
+./4-HybridMulticluster/istio-install.sh

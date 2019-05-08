@@ -15,7 +15,7 @@
 # limitations under the License.
 
 echo "### "
-echo "### Provisioning cloud run on GKE cluster"
+echo "### Provisioning Cloud Run on GKE"
 echo "### "
 
 set -euo pipefail
@@ -42,6 +42,14 @@ export POD_IP_RANGE=$(gcloud container clusters describe $CLOUDRUN_CLUSTER_NAME 
 export SERVICE_IP_RANGE=$(gcloud container clusters describe $CLOUDRUN_CLUSTER_NAME --zone $CLOUDRUN_ZONE --format=flattened | grep -e servicesIpv4Cidr | awk 'FNR == 1 {print $2}')
 
 # patch config-network configmap
-kubectl get configmap config-network --namespace knative-serving -o yaml --export=true > setup/resources/config-network.yaml
-sed -i 's@istio.sidecar.includeOutboundIPRanges: \"\*\"@istio.sidecar.includeOutboundIPRanges: \"'"$POD_IP_RANGE,$SERVICE_IP_RANGE"'\"@g' setup/resources/config-network.yaml
-kubectl apply -f setup/resources/config-network.yaml
+kubectl get configmap config-network --namespace knative-serving -o yaml --export=true > config-network.yaml
+sed -i 's@istio.sidecar.includeOutboundIPRanges: \"\*\"@istio.sidecar.includeOutboundIPRanges: \"'"$POD_IP_RANGE,$SERVICE_IP_RANGE"'\"@g' config-network.yaml
+kubectl apply -f setup/resources/config-network.yaml --namespace knative-serving
+
+# grab istio-ingressgateway ip
+kubectl get service istio-ingressgateway --namespace istio-system | grep istio-ingressgateway | awk 'FNR == 1 {print $4}'
+export ISTIO_INGRESSGATEWAY_IP=$(kubectl get service istio-ingressgateway --namespace istio-system | grep istio-ingressgateway | awk 'FNR == 1 {print $4}')
+
+# patch configmap for config-domain to use xip.io for wildcard dns
+kubectl patch configmap config-domain --namespace knative-serving --patch \
+  '{"data": {"example.com": null, "'$ISTIO_INGRESSGATEWAY_IP'.xip.io": ""}}'

@@ -16,9 +16,8 @@
 
 # Variables
 # Required from external Var
-#OPERATOR_YAML_LOCATION="${OPERATOR_YAML_LOCATION:OPERATOR_YAML_LOCATION env variable must be specified}"
-export OPERATOR_YAML_LOCATION="https://storage.googleapis.com/nomos-release/operator-rc/nomos-operator-v0.1.15-rc.1/nomos-operator.yaml"
-
+export OPERATOR_YAML_LOCATION=$(gsutil cat gs://csp-demo-235814-config/loc)
+kubectl apply -f $OPERATOR_YAML_LOCATION
 
 echo "### "
 echo "### Begin install config manager"

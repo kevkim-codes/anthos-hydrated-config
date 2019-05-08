@@ -22,7 +22,8 @@ export REMOTE_CLUSTER_NAME_BASE="remote"
 export REMOTE_CLUSTER_NAME=$REMOTE_CLUSTER_NAME_BASE.k8s.local
 export KOPS_STORE=gs://$PROJECT-kops-$REMOTE_CLUSTER_NAME_BASE
 export REMOTE_KUBECONFIG=$WORK_DIR/remote.context
-
+export NODE_COUNT=4
+export NODE_SIZE=n1-standard-2
 
 
 echo "### "
@@ -60,11 +61,10 @@ do
     sleep 3
 done
 
-
-kops create cluster --name=$REMOTE_CLUSTER_NAME --zones=us-central1-a --state=$KOPS_STORE --project=${PROJECT} --yes
-# --node-size $NODE_SIZE --node-count 3
-# --master-size $MASTER_SIZE --master-count 3 
-
+kops create cluster --name=$REMOTE_CLUSTER_NAME --zones=us-central1-a --state=$KOPS_STORE --project=${PROJECT} --node-count=$NODE_COUNT --node-size=$NODE_SIZE --yes
+    # --node-size $NODE_SIZE 
+    # --master-size $MASTER_SIZE --master-count 3 
+     
 
 KUBECONFIG= kubectl config view --minify --flatten --context=$REMOTE_CLUSTER_NAME > $REMOTE_KUBECONFIG
 

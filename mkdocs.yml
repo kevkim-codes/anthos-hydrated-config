@@ -1,16 +1,26 @@
-site_name: Anthos Pipeline Workshop
+site_name: Anthos Workshop
 nav:
 
 
 - 'Platform' : 'platform'
 - Platform: 
-  - 'Overview' : 'platform/index.md'
-  - 'Clusters': "platform/clusters.md"
-  - 'Security': 'security/index.md'
-  - 'Development': 'development/index.md'
-  - 'Operation': 'operation/index.md'
+  - 'Overview'  : 'platform/index.md'
+  - 'Clusters'  : 'platform/clusters.md'
+  - 'Config'    : 'platform/config.md'
+  - 'Mesh'      : 'platform/mesh.md'
+  - 'Pipeline'  : 'platform/pipeline.md'
 
+- 'Security' : 'security'
+- Security:
+  - 'Overview' : 'security/index.md'
 
+- 'Developer' : 'develop'
+- Developer:
+  - 'Overview' : 'develop/index.md'
+
+- 'Operator' : 'operate'
+- Operator:
+  - 'Overview' : 'operate/index.md'
 
 
 #-------------

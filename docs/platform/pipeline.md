@@ -1,4 +1,9 @@
-# Repos
+# Integrated Pipelines
+
+
+## Scalable Delivery Pipeline
+## Interface Contracts
+## Defining the Repositories
 
 
 The pipeline is designed to support a large number of applications with minimal overhead. To enable this, the framework suggests 4 types of repositories. 
@@ -22,29 +27,8 @@ The pipeline is designed to support a large number of applications with minimal 
 - The hydrated config repo(s) stores configs separately per environment (dev/stage/prod). A pattern is shown in this example utilizing branches but other patterns utilizing folders or separate repos are just as effective. 
 
 
-# Working with repos in this example
-
-The overall framework can work against any git repository. For the purposes of this example we'll be using GitHub and the GitHub CLI `gh`
-
-    NOTE: There is no delete function in this example. You will need to delete repos manually
+## Hydrating with Kustomize
 
 
-## Creating foundational repositories
-In this step we'll create 3 repositories that will be used throughout the rest of the process. 
-
-You'll create the following repos: 
-
-- app-templates
-- base-config
-- hydrated-config
-
-In a later step you'll create the fourth type, the application source repo. First let's get the base created. 
-
-Run the following commands
-
-```shell
-cd 1-repos
-./gh-create-base.sh
-```
 
 

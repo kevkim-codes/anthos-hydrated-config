@@ -1,0 +1,11 @@
+apiVersion: configmanagement.gke.io/v1
+kind: ConfigManagement
+metadata:
+  name: config-management
+spec:
+  clusterName: stage
+  git:
+    syncRepo: https://github.com/cgrant/cluster_config
+    syncBranch: stage
+    secretType: none
+    policyDir: "sample"

@@ -1,0 +1,12 @@
+apiVersion: configmanagement.gke.io/v1
+kind: ConfigManagement
+metadata:
+  name: config-management
+spec:
+  # clusterName is required and must be unique among all managed clusters
+  clusterName: west
+  git:
+    syncRepo: https://github.com/cgrant/cluster_config
+    syncBranch: master
+    secretType: none
+    policyDir: "sample"

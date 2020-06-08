@@ -1,0 +1,7 @@
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+.terraform.*
+*-creds.json
+workdir/
+_scratch/

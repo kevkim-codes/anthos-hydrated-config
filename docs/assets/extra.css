@@ -1,0 +1,9 @@
+@import url(//fonts.googleapis.com/css?family=Roboto:400,500|Inconsolata:400,700|Roboto Mono:400|Google Sans Display:400);
+
+.md-header, .md-tabs {
+    background-color: #1a73e8;
+    font-family: 400 20px/32px "Google Sans Display", Roboto,"Helvetica Neue",sans-serif;
+}
+.md-header-nav__title {
+    font-size: 1rem;
+}

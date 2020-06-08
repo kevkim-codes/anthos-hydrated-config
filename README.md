@@ -1,2 +1,0 @@
-
-# Anthos Demo

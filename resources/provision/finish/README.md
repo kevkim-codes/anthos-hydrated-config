@@ -1,0 +1,1 @@
+This directory contains provisioning scripts for a complete environment setup. Various lessons in this workshop ask you to fill in code or perform steps manually. For those lessons, you should use the provisioning scripts provided in those folders. 

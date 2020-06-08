@@ -1,0 +1,1 @@
+This directory contains base resources you'll use throughout the workshop. This directory is intended to be read only. Copy components to another directory such as `workdir/` before modifying. 

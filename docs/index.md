@@ -1,5 +1,7 @@
 # Anthos Workshop V2 - Section-1 Platform
 
+
+
 ## Clusters
 - Prep:
     - Env Vars: project_id

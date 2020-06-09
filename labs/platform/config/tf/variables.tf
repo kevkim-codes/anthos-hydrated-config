@@ -6,6 +6,9 @@ variable "default_region" {
 variable "default_zone" {
   description = "The default zone to be used"
 }
+variable "secondary_zone" {
+  description = "The secondary zone to be used"
+}
 
 variable "gke_name" {
   description = "The name of the GKE cluster"

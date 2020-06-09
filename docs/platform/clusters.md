@@ -29,9 +29,16 @@ BASE_DIR=$(PWD)
 PROJECT=$(gcloud config get-value project)
 ```
  
+Create Cluster Config Repo
+
+- [ ] TODO: Create Cluster Config Repo
+
 Install Terraform
 
 - [ ] TODO: Terraform install instructions
+
+
+
 
 
 ### Write Terraform 

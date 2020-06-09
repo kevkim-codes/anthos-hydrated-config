@@ -74,18 +74,12 @@ This will create 3 clusters: prod-primary, prod-secondary and stage then pull th
 
 It will also install anthos components on prod-primary and stage. You will manually enable components on prod-secondary later in this section. 
 
-For convince we'll rename the clusters to shorter names of: prod1, prod2, stage
+The manual steps from the previous section were added to a script in this section. Run the following command to finish preparing your environment
 
 ```shell
-DEFAULT_ZONE="us-central1-c"
-SECONDARY_ZONE="us-west1-b"
-
-kubectl config rename-context gke_${PROJECT}_${DEFAULT_ZONE}_boa-prod-primary prod1
-kubectl config rename-context gke_${PROJECT}_${SECONDARY_ZONE}_boa-prod-secondary prod2
-kubectl config rename-context gke_${PROJECT}_${DEFAULT_ZONE}_boa-stage stage
+$BASE_DIR/labs/platform/config/tf/prep.sh
 ```
 
-**  Add Stage to Environ **
 
 ### Split Screens
 To watch the changes more easily it's helpful to have 2 terminals open side by side.  There are multiple ways to accomplish this. 
@@ -134,6 +128,31 @@ Choose one of the following methods below
 === "Console"
 
     - [ ] TODO: Add Console instructions
+
+    From the left navigation choose Anthos -> Config Management
+
+    ![](../images/platform/anthos-config-leftnav.png)
+
+    Check the box next to boa-prod-secondary, then click configure at the top of the page
+
+    ![](../images/platform/anthos-config-clusters.png)
+
+    Select none for authentication then click continue
+
+    ![](../images/platform/anthos-config-repo.png)
+
+    Add the location of your repo and set master for the branch. 
+    Then select `show advanced options`
+
+    ![](../images/platform/acm-repo-settings1.png)
+
+    Under the advanced settings set `sample` as the directory to use. Then click Done
+
+    ![](../images/platform/acm-repo-settings2.png)
+
+    In a moment your cluster should sync and you should be able to see the resources in your watch pane
+
+    ![](../images/platform/acm-synced.png)
 
 === "gcloud"
 

@@ -24,9 +24,9 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
-BASE_GIT_URL=https://github.com/YOUR_ID
-BASE_DIR=$(PWD)
-PROJECT=$(gcloud config get-value project)
+export BASE_GIT_URL=https://github.com/YOUR_ID
+export BASE_DIR=$(PWD)
+export PROJECT=$(gcloud config get-value project)
 ```
  
 Create Cluster Config Repo

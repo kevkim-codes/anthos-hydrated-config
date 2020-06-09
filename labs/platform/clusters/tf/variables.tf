@@ -17,6 +17,7 @@ variable "gke_name" {
 variable "project_id" {
   description = "The project ID to host the cluster in"
 }
-#variable "gke_location" {
-#  description = "The zone or region for the GKE cluster"
-#}
+
+variable "operator_path" {
+  description = "The path to config management operator yaml"
+}

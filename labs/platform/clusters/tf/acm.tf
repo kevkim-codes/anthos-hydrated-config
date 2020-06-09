@@ -7,6 +7,7 @@ module "acm-prod-primary" {
   location         = google_container_cluster.prod-primary.location
   cluster_endpoint = google_container_cluster.prod-primary.endpoint
 
+  operator_path    = var.operator_path
   sync_repo        = "https://github.com/cgrant/cluster_config"
   sync_branch      = "master"
   policy_dir       = "sample"
@@ -26,6 +27,7 @@ module "acm-stage" {
     location         = google_container_cluster.stage.location
     cluster_endpoint = google_container_cluster.stage.endpoint
 
+    operator_path    = var.operator_path
     sync_repo        = "https://github.com/cgrant/cluster_config"
     sync_branch      = "stage"
     policy_dir       = "sample"

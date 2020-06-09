@@ -248,5 +248,14 @@ git add . && git commit -m "removing nginx" && git push origin stage
 
 ```
 
+### Cleanup
+
+```shell
+cd $BASE_DIR/labs/platform/config/tf
+terraform delete \
+    -var project_id=${PROJECT} \
+    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
+
+```
 
 ## Resources

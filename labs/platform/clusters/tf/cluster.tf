@@ -1,10 +1,10 @@
-
+ 
 # Cluster
 resource "google_container_cluster" "prod-primary" {
   name               = "${var.gke_name}-prod-primary"
   location           = var.default_zone
   initial_node_count = 4
-
+  depends_on = [google_project_service.container]
 }
 # Cluster Credentials
 resource "null_resource" "configure_kubectl_prod_primary" {
@@ -19,6 +19,7 @@ resource "google_container_cluster" "prod-secondary" {
   name               = "${var.gke_name}-prod-secondary"
   location           = var.secondary_zone
   initial_node_count = 4
+  depends_on = [google_project_service.container]
 
 }
 # Cluster Credentials
@@ -37,6 +38,7 @@ resource "google_container_cluster" "stage" {
     name               = "${var.gke_name}-stage"
     location           = var.default_zone
     initial_node_count = 4
+    depends_on = [google_project_service.container]
 }
 
 # Retrieve Cluster Credentials

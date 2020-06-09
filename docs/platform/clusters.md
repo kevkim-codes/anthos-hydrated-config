@@ -53,6 +53,8 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
         name               = "${var.gke_name}-stage"
         location           = var.default_zone
         initial_node_count = 4
+        depends_on = [google_project_service.container]
+
     }
     
     # Retrieve Cluster Credentials
@@ -77,6 +79,7 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
         location         = google_container_cluster.stage.location
         cluster_endpoint = google_container_cluster.stage.endpoint
 
+        operator_path    = var.operator_path
         sync_repo        = "https://github.com/cgrant/cluster_config"
         sync_branch      = "stage"
         policy_dir       = "sample"

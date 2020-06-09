@@ -1,4 +1,4 @@
-# Anthos Workshop V2 - Section-1 Platform
+# Anthos Workshop V2 
 
 
 
@@ -27,7 +27,7 @@
 - Implement Cluster Selectors
 - Config Drift Management
 
-## ASM
+## Mesh
 - Prep:
     - Cluster (prod2) with ASM
     - Hipster or BOA deployed 

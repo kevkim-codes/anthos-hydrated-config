@@ -53,3 +53,7 @@ theme:
     - tabs
   logo: images/logo.svg
   favicon: images/favicon.ico
+
+
+extra_css:
+  - assets/extra.css

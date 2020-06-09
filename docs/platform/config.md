@@ -37,9 +37,9 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
-BASE_GIT_URL=https://github.com/YOUR_ID
-BASE_DIR=$(PWD)
-PROJECT=$(gcloud config get-value project)
+export BASE_GIT_URL=https://github.com/YOUR_ID
+export BASE_DIR=$(PWD)
+export PROJECT=$(gcloud config get-value project)
 ```
  
 
@@ -65,7 +65,9 @@ Provision Base Infrastructure
 
 cd $BASE_DIR/labs/platform/config/tf
 terraform init
-terraform apply
+terraform apply \
+    -var project_id=${PROJECT} \
+    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
 
 ```
 This will create 3 clusters: prod-primary, prod-secondary and stage then pull the contexts locally for each so you can interact via `kubectl`. 
@@ -236,6 +238,15 @@ git add . && git commit -m "adding nginx" && git push origin stage
 ```
 
 You'll notice the resource is not deployed to bank-of-anthos namespace, or nginx namespace. ACM blocks the deploy of that resource. 
+
+Cleanup
+Make sure to delete the Nginx deployment from the repo so the sync process can continue
+
+```shell
+rm -rf $BASE_DIR/workdir/cluster_config/sample/namespaces/${NS}
+git add . && git commit -m "removing nginx" && git push origin stage
+
+```
 
 
 ## Resources

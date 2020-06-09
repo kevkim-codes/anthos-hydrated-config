@@ -88,12 +88,14 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
 ### Provision Resources
 
 ```shell
-
 cd $BASE_DIR/labs/platform/clusters/tf
 terraform init
-terraform apply
+terraform apply \
+    -var project_id=${PROJECT} \
+    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
 
 ```
+
 This will create 3 clusters: prod-primary, prod-secondary and stage then pull the contexts locally for each so you can interact via `kubectl`. 
 
 It will also install anthos components on prod-primary and stage. You will manually enable components on prod-secondary in later steps. 

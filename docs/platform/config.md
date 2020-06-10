@@ -23,11 +23,20 @@ In this next section you will install ACM manually on prod-secondary then utiliz
 
 ### Prerequisites
 
+Tools:
+
+- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
+- [GitHub's cli gh](https://github.com/cli/cli)
+
+
+
 If you completed the previous exercise, skip this step as your project will already be setup. 
 
 If you did not complete the previous section, the following steps will setup a project to the state needed in this section. 
 
 Clone the repository onto your local computer and change into the directory.
+
+
 
 ```shell
 git clone sso://user/crgrant/anthos-workshop -b v2
@@ -37,48 +46,33 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
-export BASE_GIT_URL=https://github.com/YOUR_ID
-export BASE_DIR=$(PWD)
+export GIT_ID=YOUR_ID #UPDATE WITH YOUR ID
+export GIT_BASE_URL=https://github.com/${GIT_ID}
+export REPO_PREFIX="anthos"
+
+
 export PROJECT=$(gcloud config get-value project)
+export BASE_DIR=$(PWD)
+export WORK_DIR=${BASE_DIR}/workdir
+mkdir -p $WORK_DIR
 ```
  
 
 
-Create Cluster Config Repo
-
-- [ ] TODO: Create Cluster Config Repo
-
-```shell
-mkdir $BASE_DIR/workdir
-cd $BASE_DIR/workdir
-git clone https://github.com/cgrant/cluster_config
-```
-
-Install Terraform
-
-- [ ] TODO: Terraform install instructions
-
 Provision Base Infrastructure
 
-
 ```shell
-
-cd $BASE_DIR/labs/platform/config/tf
-terraform init
-terraform apply \
-    -var project_id=${PROJECT} \
-    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
+$BASE_DIR/labs/platform/config/prep.sh
 
 ```
-This will create 3 clusters: prod-primary, prod-secondary and stage then pull the contexts locally for each so you can interact via `kubectl`. 
 
-It will also install anthos components on prod-primary and stage. You will manually enable components on prod-secondary later in this section. 
+This will create 2 clusters: prod-primary, prod-secondary then pull the contexts locally for each so you can interact via `kubectl`. 
+
+It will also install anthos components on both clusters.
 
 The manual steps from the previous section were added to a script in this section. Run the following command to finish preparing your environment
 
-```shell
-$BASE_DIR/labs/platform/config/tf/prep.sh
-```
+
 
 
 ### Split Screens
@@ -111,13 +105,13 @@ This command utilizes the `watch` command to continuously display command result
 watch \
     "echo '## Prod1 Namespaces ##'; \
     kubectl --context prod1 get ns; \
-    echo '\n\n## Prod2 Namespaces##'; \
-    kubectl --context prod2 get ns; \
-    echo '\n## bank-of-anthos pods on Prod2 ##'; \
-    kubectl --context prod2 get po -n bank-of-anthos"
+    echo '\n\n## Stage Namespaces##'; \
+    kubectl --context stage get ns; \
+    echo '\n## bank-of-anthos pods on Stage ##'; \
+    kubectl --context stage get po -n bank-of-anthos"
 ```
 
-This will list the Namespaces for both Prod1 and Prod2. You should notice the `bank-of-anthos` namesepace exists only in Prod1. You'll also see a list of pods running in the `bank-of-anthos` namespace on Prod2. Since there is no namespace matching that yet, no resources are displayed. 
+This will list the Namespaces for both Prod1 and Stage. You should notice the `bank-of-anthos` namesepace exists only in Prod1. You'll also see a list of pods running in the `bank-of-anthos` namespace on Stage. Since there is no namespace matching that yet, no resources are displayed. 
 
 ### Install Anthos ConfigManager 
 
@@ -127,13 +121,13 @@ Choose one of the following methods below
 
 === "Console"
 
-    - [ ] TODO: Add Console instructions
+        (Choose STAGE for all these )
 
     From the left navigation choose Anthos -> Config Management
 
     ![](../images/platform/anthos-config-leftnav.png)
 
-    Check the box next to boa-prod-secondary, then click configure at the top of the page
+    Check the box next to boa-stage, then click configure at the top of the page
 
     ![](../images/platform/anthos-config-clusters.png)
 
@@ -142,13 +136,12 @@ Choose one of the following methods below
     ![](../images/platform/anthos-config-repo.png)
 
     Add the location of your repo and set master for the branch. 
-    Then select `show advanced options`
+    
+    Then click Done
 
-    ![](../images/platform/acm-repo-settings1.png)
+        (do not change advanced settings)
 
-    Under the advanced settings set `sample` as the directory to use. Then click Done
 
-    ![](../images/platform/acm-repo-settings2.png)
 
     In a moment your cluster should sync and you should be able to see the resources in your watch pane
 
@@ -159,24 +152,39 @@ Choose one of the following methods below
     In this first step we'll retrieve the operator manifest and install the it on the prod-secondary cluster.
 
     ```shell
-    cd $BASE_DIR/labs/platform/config
-
-    gsutil cp gs://config-management-release/released/latest/config-management-operator.yaml config-management-operator.yaml
-
-    kubectl --context prod2 apply -f config-management-operator.yaml
+   
+    kubectl --context stage apply -f $BASE_DIR/resources/acm/config-management-operator.yaml
 
     ```
 
     Apply the Repo Configuration
 
 
-    Now that the operator is installed you'll configure it to watch your git repository. First review the ConfigManagement resource we're about to apply. Open the `acm-repo.yaml` file or run the command below to view its contents. 
+    Now that the operator is installed you'll configure it to watch your git repository. First review the ConfigManagement resource we're about to apply. Edit the `$BASE_DIR/labs/platform/config/acm-repo.yaml` file and change the `syncRepo` to point to your ACM_REPO
 
-    First switch your focus to the left terminal pane. 
+   
 
     ```shell
-    cat $BASE_DIR/labs/platform/config/acm-repo.yaml
+
+    cd $BASE_DIR/labs/platform/config/
+    cat <<EOF > acm-repo.yaml
+    apiVersion: configmanagement.gke.io/v1
+    kind: ConfigManagement
+    metadata:
+    name: config-management
+    spec:
+    # clusterName is required and must be unique among all managed clusters
+    clusterName: prod2
+    git:
+        syncRepo: ${ACM_REPO}
+        syncBranch: master
+        secretType: none
+        policyDir: "."
+    EOF
+
+
     ```
+
 
     You'll be able to see the git repository we're syncing to, the branch and directory we want applied. In this case we're using a public repository so secretType is set to `none`
 
@@ -184,11 +192,11 @@ Choose one of the following methods below
 
     ```shell
 
-    kubectl --context prod2 apply -f $BASE_DIR/labs/platform/config/acm-repo.yaml
+    kubectl --context stage apply -f $BASE_DIR/labs/platform/config/acm-repo.yaml
 
     ```
 
-    In just a moment you should see the bank-of-anthos namespace show up in prod2 and resources start creating within the namespace. 
+    In just a moment you should see the bank-of-anthos namespace show up in staeg and resources start creating within the namespace. 
 
 
 
@@ -197,11 +205,11 @@ Choose one of the following methods below
 In this step you'll create a namespace, commit it to the repository and watch it apply to both clusters
 
 ```shell
-cd $BASE_DIR/workdir/cluster_config/
+cd $BASE_DIR/workdir/hydrated-config/
 NS=nginx
 
-mkdir sample/namespaces/${NS}
-cat <<EOF > sample/namespaces/${NS}/namespace.yaml
+mkdir namespaces/${NS}
+cat <<EOF > namespaces/${NS}/namespace.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -210,7 +218,7 @@ metadata:
     istio-injection: enabled
 EOF
 
-git add . && git commit -m "new NS" && git push origin stage
+git add . && git commit -m "new NS" && git push origin master
 
 ```
 
@@ -222,13 +230,14 @@ Watch the resource window carefully in these steps as the change happens quickly
 
 Delete the Namespace you just created
 ```shell
-kubectl delete ns ${NS}
+
+kubectl --context stage delete ns ${NS}
 ```
 Almost immediately ACM replaces the namespace.
 
 Try again, this time deleting a pod
 ```shell
-kubectl delete deployment contacts -n bank-of-anthos
+kubectl --context stage delete deployment contacts -n bank-of-anthos
 ```
 Notice the replacement pod being created
 
@@ -252,8 +261,8 @@ metadata:
 Move that file into the ${NS} directory and push it to the repo
 
 ```shell
-cp $BASE_DIR/labs/platform/config/nginx.yaml $BASE_DIR/workdir/cluster_config/sample/namespaces/${NS}
-git add . && git commit -m "adding nginx" && git push origin stage
+cp $BASE_DIR/labs/platform/config/nginx.yaml $WORK_DIR/hydrated-config/namespaces/${NS}
+git add . && git commit -m "adding nginx" && git push origin master
 ```
 
 You'll notice the resource is not deployed to bank-of-anthos namespace, or nginx namespace. ACM blocks the deploy of that resource. 
@@ -262,19 +271,19 @@ Cleanup
 Make sure to delete the Nginx deployment from the repo so the sync process can continue
 
 ```shell
-rm -rf $BASE_DIR/workdir/cluster_config/sample/namespaces/${NS}
-git add . && git commit -m "removing nginx" && git push origin stage
+rm -rf $WORK_DIR/hydrated-config/namespaces/${NS}
+git add . && git commit -m "removing nginx" && git push origin master
 
 ```
 
 ### Cleanup
 
-```shell
-cd $BASE_DIR/labs/platform/config/tf
-terraform destroy \
-    -var project_id=${PROJECT} \
-    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
+If you're continuing on with the next lesson, skip this step, you'll use the resources in the next lab. 
 
+However if you'd like to teardown your environment simply run
+```shell
+cd $WORK_DIR/tf 
+./tf-down.sh
 ```
 
 ## Resources

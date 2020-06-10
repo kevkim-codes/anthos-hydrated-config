@@ -32,3 +32,148 @@ The pipeline is designed to support a large number of applications with minimal 
 
 
 
+## Lab
+
+Tools:
+
+- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
+- [GitHub's cli gh](https://github.com/cli/cli)
+
+
+
+If you completed the previous exercise, skip this step as your project will already be setup. 
+
+If you did not complete the previous section, the following steps will setup a project to the state needed in this section. 
+
+Clone the repository onto your local computer and change into the directory.
+
+
+
+```shell
+git clone sso://user/crgrant/anthos-workshop -b v2
+cd anthos-workshop
+```
+
+Set global variables that are used throughout the workshop
+
+```shell
+export GIT_ID=YOUR_ID #UPDATE WITH YOUR ID
+export GIT_BASE_URL=https://github.com/${GIT_ID}
+export REPO_PREFIX="anthos" 
+
+
+export PROJECT=$(gcloud config get-value project)
+export BASE_DIR=$(PWD)
+export WORK_DIR=${BASE_DIR}/workdir
+mkdir -p $WORK_DIR
+```
+ 
+
+Provision Base Infrastructure
+
+```shell
+$BASE_DIR/resources/provision/finish/prep.sh
+
+```
+
+### Setup The Repositories
+The composition of the various git repositories is central to the pipeline process. We've already been working with the hydrated-config repository that holds all our fully rendered yaml resources that are applied through Anthos Config Manager. 
+
+In this step you'll create the app-templates repository and the base-config repository. Just like with the hydrated-config repos, these repositories are reused across all apps and lifecycles and only need to be setup once. 
+
+Sample repos are provided in this workshop. The command below will make a copy of the sample repos and post new repos for them in your github account. 
+
+
+```shell
+$BASE_DIR/labs/platform/pipeline/gh-create-base.sh
+```
+
+
+
+## Create new App
+
+In this step we'll create a new application. The process simply copies a repo from the app-templates based on the language chosen. The app repo is customize to reflect the name for the app then pushed to GitHub as a new repo. The process also sets up a new namespace in all the clusters through ACM. This process would be executed for each new app. 
+
+For this example we'll create a new golang app called myapp with the command below
+
+```shell
+$BASE_DIR/labs/platform/pipeline/gh-create-app.sh golang myapp
+```
+
+
+## Build & Hydrate
+The Build, Hydrate and deploy steps would normally be part of a CI system and triggered by commits or merges. They're broken out here for demonstration purposes.  
+
+In this step you're acting as the CI system. 
+The first task for the system is to pull down the appropriate repositories. 
+The second task for the CI system is to build the image and immediate hydrate the manifests. For this lab because the two scripts have been separated you can run the hydrate command multiple times independent of other tasks to see the effects. 
+
+Run the following commands
+
+```shell
+$BASE_DIR/labs/platform/pipeline/pull-repos.sh anthos-myapp
+$BASE_DIR/labs/platform/pipeline/hydrate.sh anthos-myapp
+```
+
+
+## Deploy
+In a typical CI/CD process once the image has been built and pushed, and the resource yamls have been hydrated, a deployment is triggered to roll the new assets out to an environment. 
+
+Currently all our environments are deploying assets from the same hydrated-config master branch. To deploy our assets only to the stage environment, we could use ClusterSelectors within ACM, however for better separation of concerns between prod and lower lifecycles you'll want a separate branch or even separate repository all together. ClustersSelectors would be a good option for targeting one production cluster over another.
+
+To update stage to utilize the stage brach of the hydrated-config repo instead of master, you'll need to update the configuration. This can be done through thee console or the commandline as shown below. 
+
+Run the following commands to update the syncBranch to stage, and apply the resources. 
+
+```shell
+
+cd $WORK_DIR
+cat <<EOF > acm-repo.yaml
+apiVersion: configmanagement.gke.io/v1
+kind: ConfigManagement
+metadata:
+  name: config-management
+spec:
+  # clusterName is required and must be unique among all managed clusters
+  clusterName: stage
+  git:
+    syncRepo: ${ACM_REPO}
+    syncBranch: stage
+    secretType: none
+    policyDir: "."
+EOF
+
+
+
+kubectl --context stage apply -f ./acm-repo.yaml
+```
+
+
+Now that our stage environment is watching the stage branch, we can push our changes. 
+
+Recall that we completed the next steps with fully hydrated yamls reflecting our image updates and config changes. These files were saved in the cicd_workspace in the hydrated config repo directory. Before saving, the system switched to the stage branch so the resources would not be applied to master/prod. 
+
+At this point, to deploy with ACM we simply need to push the directory to GitHub run the command below to complete the deploy. 
+
+
+```shell
+$BASE_DIR/labs/platform/pipeline/deploy.sh 
+```
+
+Finally the CICD system would typically be utilizing an ephemeral workspace where assets are deleted between runs. To mimic that, simply run the cleanup steps below to delete the directory. 
+
+```shell
+cd $WORK_DIR
+rm -rf $WORK_DIR/cicd_workspace
+```
+### Cleanup
+
+If you're continuing on with the next lesson, skip this step, you'll use the resources in the next lab. 
+
+However if you'd like to teardown your environment simply run
+```shell
+cd $WORK_DIR/tf 
+./tf-down.sh
+```
+
+## Resources

@@ -4,3 +4,4 @@ terraform.tfstate.*
 .terraform.*
 *-creds.json
 workdir/
+_scratch/

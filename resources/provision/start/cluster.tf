@@ -18,7 +18,7 @@ resource "null_resource" "configure_kubectl_prod_primary" {
 resource "google_container_cluster" "stage" {
     name               = "${var.gke_name}-stage"
     location           = var.default_zone
-    initial_node_count = 4
+    initial_node_count = 5
 
     depends_on = [google_project_service.container]
 }

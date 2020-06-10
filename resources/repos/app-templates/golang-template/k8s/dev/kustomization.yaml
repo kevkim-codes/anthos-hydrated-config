@@ -13,7 +13,7 @@
 # limitations under the License.
 
 bases:
-- ../../../shared-kustomize/golang
+- ../../../base-config/golang
 patches:
 - deployment.yaml
 namePrefix: "golang-template-"

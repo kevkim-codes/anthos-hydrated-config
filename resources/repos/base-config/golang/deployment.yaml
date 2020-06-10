@@ -28,10 +28,6 @@ spec:
       containers:
       - name: app
         image: app
-        resources:
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
         env:
         - name: ENVIRONMENT
           value: base

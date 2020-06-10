@@ -2,25 +2,25 @@ site_name: Anthos Workshop
 nav:
 
 - 'Platform' : 'platform'
-- 'Security' : 'security'
-- 'Developer' : 'develop'
-- 'Operator' : 'operate'
+#- 'Security' : 'security'
+#- 'Developer' : 'develop'
+#- 'Operator' : 'operate'
 
 - Platform: 
   - 'Overview'  : 'platform/index.md'
   - 'Clusters'  : 'platform/clusters.md'
   - 'Config'    : 'platform/config.md'
-  - 'Mesh'      : 'platform/mesh.md'
+#  - 'Mesh'      : 'platform/mesh.md'
   - 'Pipeline'  : 'platform/pipeline.md'
 
-- Security:
-  - 'Overview' : 'security/index.md'
+#- Security:
+#  - 'Overview' : 'security/index.md'
 
-- Developer:
-  - 'Overview' : 'develop/index.md'
+# - Developer:
+#   - 'Overview' : 'develop/index.md'
 
-- Operator:
-  - 'Overview' : 'operate/index.md'
+# - Operator:
+#   - 'Overview' : 'operate/index.md'
 
 
 

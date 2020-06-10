@@ -19,7 +19,6 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: golang-template-ksa
       containers:
       - name: app
         env:

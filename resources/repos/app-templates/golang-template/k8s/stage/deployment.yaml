@@ -20,7 +20,6 @@ spec:
   replicas: 1
   template:
     spec:
-      serviceAccountName: golang-template-ksa
       containers:
       - name: app
         env:

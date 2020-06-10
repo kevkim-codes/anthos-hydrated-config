@@ -14,6 +14,11 @@
 
 ### Prerequisites
 
+Tools:
+
+- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
+- [GitHub's cli gh](https://github.com/cli/cli)
+
 Clone the repository onto your local computer and change into the directory.
 
 ```shell
@@ -24,45 +29,49 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
-export BASE_GIT_URL=https://github.com/YOUR_ID
-export BASE_DIR=$(PWD)
+export GIT_ID=YOUR_ID #UPDATE WITH YOUR ID
+export GIT_BASE_URL=https://github.com/${GIT_ID}
+export REPO_PREFIX="anthos"
+export ACM_REPO=${GIT_BASE_URL}/$REPO_PREFIX-hydrated-config
+
+
 export PROJECT=$(gcloud config get-value project)
+export BASE_DIR=$(PWD)
+export WORK_DIR=${BASE_DIR}/workdir
+mkdir -p $WORK_DIR
+
 ```
  
-Create Cluster Config Repo
 
-- [ ] TODO: Create Cluster Config Repo
-
-Install Terraform
-
-- [ ] TODO: Terraform install instructions
-
-
+Prepare the workspace
+```shell
+source $BASE_DIR/labs/platform/clusters/prep.sh
+```
 
 
 
 ### Write Terraform 
 
-Add the lines from both of the tabs listed in the box below to the appropriate files located in `$BASE_DIR/labs/platform/clusters/tf`
+Add the lines from both of the tabs listed in the box below to the appropriate files located in `$BASE_DIR/workdir/tf`
 
 === "cluster.tf"
     ```terraform
 
-    # Provision Stage Cluster
-    resource "google_container_cluster" "stage" {
-        name               = "${var.gke_name}-stage"
-        location           = var.default_zone
+    # Provision Secondary Cluster
+    resource "google_container_cluster" "prod-secondary" {
+        name               = "${var.gke_name}-prod-secondary"
+        location           = var.secondary_zone
         initial_node_count = 4
         depends_on = [google_project_service.container]
 
     }
     
     # Retrieve Cluster Credentials
-    resource "null_resource" "configure_kubectl_stage" {
+    resource "null_resource" "configure_kubectl_prod-secondary" {
         provisioner "local-exec" {
-            command = "gcloud container clusters get-credentials ${google_container_cluster.stage.name} --zone ${google_container_cluster.stage.location} --project ${data.google_client_config.current.project}"
+            command = "gcloud container clusters get-credentials ${google_container_cluster.prod-secondary.name} --zone ${google_container_cluster.prod-secondary.location} --project ${data.google_client_config.current.project}"
         }
-        depends_on = [google_container_cluster.stage]
+        depends_on = [google_container_cluster.prod-secondary]
     }
     ```
 
@@ -70,19 +79,19 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
     ```terraform
 
     # Enable Anthos Configuration Management
-    module "acm-stage" {
+    module "acm-prod-secondary" {
         source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
         skip_gcloud_download = true
 
         project_id       = data.google_client_config.current.project
-        cluster_name     = google_container_cluster.stage.name
-        location         = google_container_cluster.stage.location
-        cluster_endpoint = google_container_cluster.stage.endpoint
+        cluster_name     = google_container_cluster.prod-secondary.name
+        location         = google_container_cluster.prod-secondary.location
+        cluster_endpoint = google_container_cluster.prod-secondary.endpoint
 
-        operator_path    = var.operator_path
-        sync_repo        = "https://github.com/cgrant/cluster_config"
-        sync_branch      = "stage"
-        policy_dir       = "sample"
+        operator_path    = var.acm_operator_path
+        sync_repo        = var.acm_repo_location
+        sync_branch      = "master"
+        policy_dir       = "."
     }
 
     ```
@@ -91,17 +100,13 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
 ### Provision Resources
 
 ```shell
-cd $BASE_DIR/labs/platform/clusters/tf
-terraform init
-terraform apply \
-    -var project_id=${PROJECT} \
-    -var operator_path=${BASE_DIR}/resources/acm/config-management-operator.yaml
-
+cd $WORK_DIR/tf 
+./tf-up.sh
 ```
 
 This will create 3 clusters: prod-primary, prod-secondary and stage then pull the contexts locally for each so you can interact via `kubectl`. 
 
-It will also install anthos components on prod-primary and stage. You will manually enable components on prod-secondary in later steps. 
+It will also install anthos components on prod-primary. You will manually enable components on the others in later steps. 
 
 For convince we'll rename the clusters to shorter names of: prod1, prod2, stage
 
@@ -157,7 +162,7 @@ Once the data has been submitted, Anthos will
     Create a service account
     ```shell
     export GKE_CONNECT_SA=gke-connect-sa
-    export GKE_CONNECT_SA_FILE=$BASE_DIR/$GKE_CONNECT_SA-creds.json
+    export GKE_CONNECT_SA_FILE=$WORK_DIR/$GKE_CONNECT_SA-creds.json
     gcloud iam service-accounts create $GKE_CONNECT_SA --project=$PROJECT
     ```
 
@@ -194,7 +199,15 @@ Once the data has been submitted, Anthos will
     </pre>
 
 
+### Cleanup
 
+If you're continuing on with the next lesson, skip this step, you'll use the resources in the next lab. 
+
+However if you'd like to teardown your environment simply run
+```shell
+cd $WORK_DIR/tf 
+./tf-down.sh
+```
 
 ## Resources
 

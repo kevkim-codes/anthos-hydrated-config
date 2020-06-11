@@ -12,13 +12,14 @@ The pipeline is designed to support a large number of applications with minimal 
 
 - A set of repositories is included in the overall pipeline to act as of templates for common application languages. These repos contain base code, k8s yamls, and ci/cd configs to help teams bootstrap new applications in the pipeline. New applications copy from this set of resources once upon creation. 
 
+**Base Config Repo**:
+
+- Base yaml configurations used by all applications. The applications pull in these base configurations to create fully formed deployment yamls. These minimize the amount of configuration managed by the app teams and centralizes common patterns like labeling. 
+
 **App Repo**:
 
 - The traditional source repositories used by the application teams to store code and other assets. These also contain resource yaml overrides unique to the application and/or environment
 
-**Base Config Repo**:
-
-- Base yaml configurations used by all applications. The applications pull in these base configurations to create fully formed deeployment yamls. These minimize the amount of configuration managed by the app teams and centralizes common patterns like labeling. 
 
 **Hydrated Config Repo**:
 
@@ -28,7 +29,6 @@ The pipeline is designed to support a large number of applications with minimal 
 
 
 ## Hydrating with Kustomize
-
 
 
 
@@ -119,9 +119,11 @@ $BASE_DIR/labs/platform/pipeline/hydrate.sh anthos-myapp
 ## Deploy
 In a typical CI/CD process once the image has been built and pushed, and the resource yamls have been hydrated, a deployment is triggered to roll the new assets out to an environment. 
 
-Currently all our environments are deploying assets from the same hydrated-config master branch. To deploy our assets only to the stage environment, we could use ClusterSelectors within ACM, however for better separation of concerns between prod and lower lifecycles you'll want a separate branch or even separate repository all together. ClustersSelectors would be a good option for targeting one production cluster over another.
+In this tutorial we've highlighted how Anthos Config Manager can be used to deploy more than just RBAC controls. In practice, organizations will use agents in the clusters or tools like CloudBuild and gke_deploy to deploy. For simplicity of this walk through we'll continue through with ACM. 
 
-To update stage to utilize the stage brach of the hydrated-config repo instead of master, you'll need to update the configuration. This can be done through thee console or the commandline as shown below. 
+Currently all our environments are deploying assets using same hydrated-config master branch. To deploy our assets only to the stage environment, we could use ClusterSelectors within ACM, however for better separation of concerns between prod and lower life cycles you'll want a separate branch or even separate repository all together. ClustersSelectors would be a good option for targeting one production cluster over another.
+
+To update stage to utilize the stage brach of the hydrated-config repo instead of master, you'll need to update the configuration. This can be done through thee console or the command line as shown below. 
 
 Run the following commands to update the syncBranch to stage, and apply the resources. 
 

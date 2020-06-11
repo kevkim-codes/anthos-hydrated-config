@@ -4,9 +4,9 @@
 ## Scalable Delivery Pipeline
 ## Interface Contracts
 ## Defining the Repositories
+![](../images/platform/repos.png)
 
-
-The pipeline is designed to support a large number of applications with minimal overhead. To enable this, the framework suggests 4 types of repositories. 
+The pipeline is designed to support a large number of applications and teams with minimal overhead. To enable this, the framework suggests 4 types of repositories. 
 
 **App Templates**:
 

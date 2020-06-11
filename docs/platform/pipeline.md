@@ -10,22 +10,31 @@ The pipeline is designed to support a large number of applications and teams wit
 
 **App Templates**:
 
-- A set of repositories is included in the overall pipeline to act as of templates for common application languages. These repos contain base code, k8s yamls, and ci/cd configs to help teams bootstrap new applications in the pipeline. New applications copy from this set of resources once upon creation. 
+- A set of repositories to act as templates for common application types. These repos contain application source code, k8s configuration, and ci/cd configs to help teams bootstrap new applications in the pipeline. New applications are copied from this set of repos. 
 
 **Base Config Repo**:
 
-- Base yaml configurations used by all applications. The applications pull in these base configurations to create fully formed deployment yamls. These minimize the amount of configuration managed by the app teams and centralizes common patterns like labeling. 
+- Base yaml configurations leveraged by applications. The applications include these base configurations to create fully formed deployment yamls. These minimize the amount of configuration managed by the app teams and centralizes common patterns like labeling, health checking and rollout strategies. 
 
 **App Repo**:
 
-- The traditional source repositories used by the application teams to store code and other assets. These also contain resource yaml overrides unique to the application and/or environment
+- The traditional application source repositories used by the application teams to store code and other assets. These also contain Kubernetes configuration overrides unique to the application and/or environment
+
+These repos will include
+
+  - Application Source Code
+  - Dockerfile
+  - CI Config
+  - Deployment Manifests
+  - skaffold.yaml (optional)
+
 
 
 **Hydrated Config Repo**:
 
 - This repository contains the yamls that represent the desired state of the clusters. The clusters apply the k8s yamls in this repo during the deploy process. This may be represented by one or more repositories depending on your usage of the framework. For example utilizing ACM for config and deploy resources will use one repository. Utilizing ACM for config and separate tool for deploy you might utilize a separate repo for that tool. 
 
-- The hydrated config repo(s) stores configs separately per environment (dev/stage/prod). A pattern is shown in this example utilizing branches but other patterns utilizing folders or separate repos are just as effective. 
+- The hydrated config repo(s) stores configs separately per environment (dev/stage/prod). A pattern is shown in this example utilizing branches to separate the environments.
 
 
 ## Hydrating with Kustomize
@@ -41,9 +50,9 @@ Tools:
 
 
 
-If you completed the previous exercise, skip this step as your project will already be setup. 
+If you completed the previous exercise, skip this step as your project will already be set up. 
 
-If you did not complete the previous section, the following steps will setup a project to the state needed in this section. 
+If you did not complete the previous section, the following steps will set up a project to the state needed in this section. 
 
 Clone the repository onto your local computer and change into the directory.
 
@@ -77,9 +86,9 @@ $BASE_DIR/resources/provision/finish/prep.sh
 ```
 
 ### Setup The Repositories
-The composition of the various git repositories is central to the pipeline process. We've already been working with the hydrated-config repository that holds all our fully rendered yaml resources that are applied through Anthos Config Manager. 
+The composition of the various git repositories is central to the pipeline process. We've already been working with the hydrated-config repository that holds all our fully rendered yaml resources that are applied through Anthos Config Management. 
 
-In this step you'll create the app-templates repository and the base-config repository. Just like with the hydrated-config repos, these repositories are reused across all apps and lifecycles and only need to be setup once. 
+In this step you'll create the app-templates repository and the base-config repository. Just like with the hydrated-config repos, these repositories are reused by each app and only need to be set up once. 
 
 Sample repos are provided in this workshop. The command below will make a copy of the sample repos and post new repos for them in your github account. 
 
@@ -102,11 +111,9 @@ $BASE_DIR/labs/platform/pipeline/gh-create-app.sh golang myapp
 
 
 ## Build & Hydrate
-The Build, Hydrate and deploy steps would normally be part of a CI system and triggered by commits or merges. They're broken out here for demonstration purposes.  
+The Build, Hydrate and Deploy steps would normally be part of a CI system and triggered by commits or merges. They're broken out here for demonstration purposes.  
 
-In this step you're acting as the CI system. 
-The first task for the system is to pull down the appropriate repositories. 
-The second task for the CI system is to build the image and immediate hydrate the manifests. For this lab because the two scripts have been separated you can run the hydrate command multiple times independent of other tasks to see the effects. 
+In this step you're acting as a CI system. The first task for the system is to clone the appropriate repositories. The second task for the CI system is to build the image and hydrate the manifests. For this lab because the two scripts have been separated you can run the hydrate command multiple times independent of other tasks to see the effects. 
 
 Run the following commands
 
@@ -117,13 +124,13 @@ $BASE_DIR/labs/platform/pipeline/hydrate.sh anthos-myapp
 
 
 ## Deploy
-In a typical CI/CD process once the image has been built and pushed, and the resource yamls have been hydrated, a deployment is triggered to roll the new assets out to an environment. 
+In a typical CI/CD process once an image has been built and pushed, and the resource yamls have been hydrated, a deployment is triggered to roll the new assets out to an environment. 
 
 In this tutorial we've highlighted how Anthos Config Manager can be used to deploy more than just RBAC controls. In practice, organizations will use agents in the clusters or tools like CloudBuild and gke_deploy to deploy. For simplicity of this walk through we'll continue through with ACM. 
 
-Currently all our environments are deploying assets using same hydrated-config master branch. To deploy our assets only to the stage environment, we could use ClusterSelectors within ACM, however for better separation of concerns between prod and lower life cycles you'll want a separate branch or even separate repository all together. ClustersSelectors would be a good option for targeting one production cluster over another.
+Currently all our environments are deploying assets using same hydrated-config master branch. To deploy our assets only to the stage environment, we could use ClusterSelectors within ACM, however for better separation of concerns between prod and lower life cycles you'll want a separate branch or even separate repository all together. ClusterSelectors would be a good option for targeting one production cluster over another.
 
-To update stage to utilize the stage brach of the hydrated-config repo instead of master, you'll need to update the configuration. This can be done through thee console or the command line as shown below. 
+To update the stage to utilize the stage branch of the hydrated-config repo instead of master, you'll need to update the configuration. This can be done through the console or the command line as shown below. 
 
 Run the following commands to update the syncBranch to stage, and apply the resources. 
 

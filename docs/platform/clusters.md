@@ -211,7 +211,7 @@ cd $WORK_DIR/tf
 
 ## Resources
 
-- [Anthos Technical Ovverview](https://cloud.google.com/anthos/docs/concepts/overview)
+- [Anthos Technical Overview](https://cloud.google.com/anthos/docs/concepts/overview)
 - [Anthos Environs](https://cloud.google.com/anthos/multicluster-management/environs)
 - [Terraform GKE ACM Submodule](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google/8.1.0/submodules/acm)
 - [Terraform GKE ASM Submodule](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/add-asm-module/modules/asm)

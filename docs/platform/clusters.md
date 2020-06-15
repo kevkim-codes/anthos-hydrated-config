@@ -1,30 +1,28 @@
 # Environments & Clusters
+ 
+### Objectives
+Multi Cluster Use Cases 
+Cluster Organization Best Practices
+Working with Projects, Hub & Environs
+Provisioning Platform Resources
 
-## Multi Cluster Use Cases
+## Before you begin
+To get started with this lab you’ll need to install tooling, set a few variables and provision the environment. Follow the steps below to prepare your lab.
 
-## Cluster Organization Best Practices
+### Task: Install Tools
 
-## Working with Projects, Hub & Environs
+- Terraform
+- GitHub's cli gh
 
-## Provisioning Platform Resources
-
----
-
-## Lab
-
-### Prerequisites
-
-Tools:
-
-- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
-- [GitHub's cli gh](https://github.com/cli/cli)
-
+### Task: Clone Lab Repository
 Clone the repository onto your local computer and change into the directory.
 
 ```shell
 git clone sso://user/crgrant/anthos-workshop -b v2
 cd anthos-workshop
 ```
+
+### Task: Set Lab Variables
 
 Set global variables that are used throughout the workshop
 
@@ -39,20 +37,19 @@ export PROJECT=$(gcloud config get-value project)
 export BASE_DIR=$(PWD)
 export WORK_DIR=${BASE_DIR}/workdir
 mkdir -p $WORK_DIR
-
 ```
  
+### Task: Prepare the workspace
 
-Prepare the workspace
 ```shell
 source $BASE_DIR/labs/platform/clusters/prep.sh
 ```
 
 
-
-### Write Terraform 
-
-Add the lines from both of the tabs listed in the box below to the appropriate files located in `$BASE_DIR/workdir/tf`
+## Provisioning Resources
+### Task: Create an Anthos Cluster
+ 
+Add the lines from both cluster.tf & acm.tf listed below to the appropriate files located in `$BASE_DIR/workdir/tf`
 
 === "cluster.tf"
     ```terraform
@@ -97,7 +94,7 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
     ```
 
 
-### Provision Resources
+### Task: Provision Resources
 
 ```shell
 cd $WORK_DIR/tf 
@@ -108,6 +105,7 @@ This will create 3 clusters: prod-primary, prod-secondary and stage then pull th
 
 It will also install anthos components on prod-primary. You will manually enable components on the others in later steps. 
 
+### Task: Rename Contexts
 For convince we'll rename the clusters to shorter names of: prod1, prod2, stage
 
 ```shell
@@ -122,8 +120,11 @@ kubectl config rename-context gke_${PROJECT}_${DEFAULT_ZONE}_boa-stage stage
 
 
 
-### Register With Anthos Hub
+## Working with Environs
 
+Cluster Organization Best Practices
+
+### Task: Register With Anthos Hub
 To add a cluster to an Anthos Environ the following steps need to be performed:
 
 - Create a service account (SA) to connect the agent with Google
@@ -134,11 +135,7 @@ Once the data has been submitted, Anthos will
 
 === "Console"
     
-
-
     Click on Anthos -> Clusters from the left navigation
-
-
 
     ![](../images/platform/anthos-clusters-nav.png)
 

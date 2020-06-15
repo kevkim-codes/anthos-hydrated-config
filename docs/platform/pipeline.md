@@ -178,7 +178,7 @@ Finally the CICD system would typically be utilizing an ephemeral workspace wher
 cd $WORK_DIR
 rm -rf $WORK_DIR/cicd_workspace
 ```
-## Cleanup Lab
+## Lab Cleanup
 
 If you're continuing on with the next lesson, skip this step, you'll use the resources in the next lab. 
 

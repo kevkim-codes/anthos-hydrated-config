@@ -290,7 +290,7 @@ watch \
     kubectl --context stage get po -n bank-of-anthos"
 ```
 
-This will list the Namespaces for both Prod1 and Stage. You should notice the `bank-of-anthos` namesepace exists only in Prod1. You'll also see a list of pods running in the `bank-of-anthos` namespace on Stage. Since there is no namespace matching that yet, no resources are displayed. 
+This will list the Namespaces for both Prod1 and Stage. You should notice the `bank-of-anthos` namespace exists only in Prod1. You'll also see a list of pods running in the `bank-of-anthos` namespace on Stage. Since there is no namespace matching that yet, no resources are displayed. 
 
 ### Task: Configure resources on a single cluster
 

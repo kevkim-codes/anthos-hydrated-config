@@ -1,0 +1,13 @@
+
+# Requires GITHUB_USERNAME to be set already
+
+export REPO_PREFIX="anthos"
+export GIT_BASE_URL=https://github.com/${GITHUB_USERNAME}
+export ACM_REPO=${GIT_BASE_URL}/$REPO_PREFIX-hydrated-config
+export PROJECT=$(gcloud config get-value project)
+export BASE_DIR=$(PWD)
+export WORK_DIR=${BASE_DIR}/workdir
+mkdir -p $WORK_DIR
+
+DEFAULT_ZONE="us-central1-c"
+SECONDARY_ZONE="us-west1-b"

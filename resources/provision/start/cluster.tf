@@ -32,19 +32,3 @@ resource "null_resource" "configure_kubectl_stage" {
 }
 
 ## Insert Lines Here
-# Provision Secondary Cluster
-resource "google_container_cluster" "prod-secondary" {
-    name               = "${var.gke_name}-prod-secondary"
-    location           = var.secondary_zone
-    initial_node_count = 4
-    depends_on = [google_project_service.container]
-
-}
-
-# Retrieve Cluster Credentials
-resource "null_resource" "configure_kubectl_prod-secondary" {
-    provisioner "local-exec" {
-        command = "gcloud container clusters get-credentials ${google_container_cluster.prod-secondary.name} --zone ${google_container_cluster.prod-secondary.location} --project ${data.google_client_config.current.project}"
-    }
-    depends_on = [google_container_cluster.prod-secondary]
-}

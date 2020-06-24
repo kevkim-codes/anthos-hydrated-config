@@ -38,6 +38,7 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
+gcloud config set core/project YOUR_PROJECT
 export GITHUB_USERNAME=YOUR_USERNAME #UPDATE WITH YOUR ID
 ```
  
@@ -46,6 +47,7 @@ export GITHUB_USERNAME=YOUR_USERNAME #UPDATE WITH YOUR ID
 In this task you’ll prepare your workspace for use in this lab. The commands below will set some additional global variables used throughout the examples. It will also create a GitHub repository from assets stored in the resources directory. 
 
 ```shell
+gcloud components update --quiet
 source $BASE_DIR/labs/env
 source $BASE_DIR/labs/platform/clusters/prep.sh
 ```

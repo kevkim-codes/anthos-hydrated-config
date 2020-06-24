@@ -1,34 +1,47 @@
  
 # Cluster
-resource "google_container_cluster" "prod-primary" {
+module "prod-primary" {
   name               = "${var.gke_name}-prod-primary"
-  location           = var.default_zone
-  initial_node_count = 4
-  depends_on = [google_project_service.container]
+    project_id        = var.project_id
+  source  = "terraform-google-modules/kubernetes-engine/google"
+  regional            = false
+  region                  = var.default_region
+  network                 = var.network
+  subnetwork              = var.subnetwork
+  ip_range_pods           = var.ip_range_pods
+  ip_range_services       = var.ip_range_services
+  zones             = var.default_zone
+
 }
 # Cluster Credentials
 resource "null_resource" "configure_kubectl_prod_primary" {
   provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${google_container_cluster.prod-primary.name} --zone ${google_container_cluster.prod-primary.location} --project ${data.google_client_config.current.project}"
+    command = "gcloud container clusters get-credentials ${module.prod-primary.name} --zone ${module.prod-primary.location} --project ${data.google_client_config.current.project}"
   }
-  depends_on = [google_container_cluster.prod-primary]
+  depends_on = [module.prod-primary]
 }
 
 # Provision Stage Cluster
-resource "google_container_cluster" "stage" {
-    name               = "${var.gke_name}-stage"
-    location           = var.default_zone
-    initial_node_count = 5
+module "stage" {
+  source                  = "terraform-google-modules/kubernetes-engine/google"
+  project_id        = var.project_id
+  name                    = "${var.gke_name}-stage"
+  regional                = false
+  region                  = var.default_region
+  network                 = var.network
+  subnetwork              = var.subnetwork
+  ip_range_pods           = var.ip_range_pods
+  ip_range_services       = var.ip_range_services
+  zones             = var.default_zone
 
-    depends_on = [google_project_service.container]
 }
 
 # Retrieve Cluster Credentials
 resource "null_resource" "configure_kubectl_stage" {
     provisioner "local-exec" {
-        command = "gcloud container clusters get-credentials ${google_container_cluster.stage.name} --zone ${google_container_cluster.stage.location} --project ${data.google_client_config.current.project}"
+        command = "gcloud container clusters get-credentials ${module.stage.name} --zone ${module.stage.location} --project ${data.google_client_config.current.project}"
     }
-    depends_on = [google_container_cluster.stage]
+    depends_on = [module.stage]
 }
 
 ## Insert Lines Here

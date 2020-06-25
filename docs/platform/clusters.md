@@ -24,6 +24,12 @@ Install the following tools with the instructions provided in the links below.
 - [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
 - [GitHub's cli gh](https://github.com/cli/cli)
 
+### Task: Enable Write Access to your GitHub Account
+In this series of labs you’ll be reading and writing to GitHub repositories. To ensure proper interactions within the series be sure you have enabled write access to your GitHub account from your command line.  [Follow the steps provided by GitHub](https://help.github.com/en/github/getting-started-with-github/set-up-git#next-steps-authenticating-with-github-from-git)
+
+If your organization requires use of 2fa with github please [review these instructions](https://help.github.com/en/github/authenticating-to-github/accessing-github-using-two-factor-authentication#using-two-factor-authentication-with-the-command-line)
+
+
 ### Task: Clone Lab Repository
 
 Clone the repository onto your local computer and change into the directory.
@@ -38,14 +44,20 @@ cd anthos-workshop
 Set global variables that are used throughout the workshop
 
 ```shell
-gcloud config set core/project YOUR_PROJECT
+gcloud config set core/project YOUR_PROJECT #UPDATE WITH YOUR PROJECT
 export GITHUB_USERNAME=YOUR_USERNAME #UPDATE WITH YOUR ID
 ```
  
 ### Task: Prepare the workspace
 
-In this task you’ll prepare your workspace for use in this lab. The commands below will set some additional global variables used throughout the examples. It will also create a GitHub repository from assets stored in the resources directory. 
+In this task you’ll prepare your workspace for use in this lab. The commands below will update your gcloud components and set some additional global variables used throughout the examples. It will also create a GitHub repository from assets stored in the resources directory. 
 
+Update gcloud components
+```shell
+gcloud components update --quiet
+```
+
+Run the setup steps
 ```shell
 gcloud components update --quiet
 source $BASE_DIR/labs/env
@@ -59,44 +71,55 @@ One of the fundamental challenges for platform teams is ensuring a way to consis
 
 ### Task: Create an Anthos Cluster
  
-Google works closely with Terraform to provide modules and resources for Google Cloud Platform services. In the following example you’ll utilize the Terraform module for GKE and Anthos Config Manager (ACM).
+Many organizations utilize Terraform for Infrastructure as code, ensuring repeatable infrastructure provisioning and configuration. Google works closely with Terraform to provide modules and resources for Google Cloud Platform services. 
 
-Add the lines from both of the tabs listed in the box below to the appropriate files located in `$BASE_DIR/workdir/tf`
+In this section you’ll review the modules used to provision GKE clusters and enable Anthos components for seamless anthos provisioning. 
+
+The complete files for the excerpts below can be found in `$BASE_DIR/workdir/tf `
+
+Review the excerpts from both of the files listed in the box below to understand how Terraform can be used to provision Anthos components 
+
 
 
 === "cluster.tf"
     ```terraform
 
-    # Provision a Secondary Production Cluster
-    resource "google_container_cluster" "prod-secondary" {
-        name               = "${var.gke_name}-prod-secondary"
-        location           = var.secondary_zone
-        initial_node_count = 4
-        depends_on = [google_project_service.container]
-    }
+    module "prod-primary" {
+        name               = "${var.gke_name}-prod-primary"
+        project_id        = var.project_id
+        source  = "terraform-google-modules/kubernetes-engine/google"
+        regional            = false
+        region                  = var.default_region
+        network                 = var.network
+        subnetwork              = var.subnetwork
+        ip_range_pods           = var.ip_range_pods
+        ip_range_services       = var.ip_range_services
+        zones             = var.default_zone
 
-    # Retrieve Cluster Credentials
-    resource "null_resource" "configure_kubectl_prod-secondary" {
+    }
+    # Cluster Credentials
+    resource "null_resource" "configure_kubectl_prod_primary" {
         provisioner "local-exec" {
-            command = "gcloud container clusters get-credentials ${google_container_cluster.prod-secondary.name} --zone ${google_container_cluster.prod-secondary.location} --project ${data.google_client_config.current.project}"
+            command = "gcloud container clusters get-credentials ${module.prod-primary.name} --zone ${module.prod-primary.location} --project ${data.google_client_config.current.project}"
         }
-        depends_on = [google_container_cluster.prod-secondary]
+        depends_on = [module.prod-primary]
     }
 
     ```
+    The GKE module is used to create a new cluster. This example utilizes many of the defaults for a simple demonstration cluster, however you can configure many advanced on your own to build a complete production ready cluster.   In the above excerpt we’re creating the cluster and separately the code retrieves the cluster credentials so you can interact with it locally using command line tools. This step wouldn’t be used in a production configuration.
 
 === "acm.tf"
     ```terraform
 
     # Enable Anthos Configuration Management
-    module "acm-prod-secondary" {
+    module "acm-prod-primary" {
         source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
         skip_gcloud_download = true
 
         project_id       = data.google_client_config.current.project
-        cluster_name     = google_container_cluster.prod-secondary.name
-        location         = google_container_cluster.prod-secondary.location
-        cluster_endpoint = google_container_cluster.prod-secondary.endpoint
+        cluster_name     = module.prod-primary.name
+        location         = module.prod-primary.location
+        cluster_endpoint = module.prod-primary.endpoint
 
         operator_path    = var.acm_operator_path
         sync_repo        = var.acm_repo_location
@@ -104,7 +127,13 @@ Add the lines from both of the tabs listed in the box below to the appropriate f
         policy_dir       = "."
     }
 
+
     ```
+
+    As you can see in the terraform script, we’re using the ACM submodule. This module requires a few key elements. The first section provides details about which GKE cluster you want to enable ACM on. In this case it’s passing in variables for cluster_name, location and cluster_endpoint provided by the GKE terraform module. 
+
+    Specifically for the ACM module, you’ll also need to provide details about the git repository location to be used in the sync process. In this case values are provided for the acm_repo_location, utilizing the master branch and no subdirectory as noted by the “.” path for policy_dir. 
+
 
 
 ### Task: Provision Resources
@@ -126,7 +155,18 @@ This step will take ~5 minutes.
 
 ## Working with Environs
 
-A Google Cloud Platform (GCP) project can contain some resources that are enabled for Anthos and some that are not. For example you may have a series of GKE clusters utilizing Anthos features and while a separate sandbox cluster may have been spun up temporarily for testing purposes. To enable Anthos features on a Kubernetes cluster, whether on GCP or other location, you’ll need to register the cluster in an Anthos Environ, a unified organizational element across GCP, your Data Centers and other Cloud Providers.  
+A Google Cloud Platform (GCP) project can contain some resources that are enabled for Anthos and some that are not. For example you may have a series of GKE clusters utilizing Anthos features and while a separate sandbox cluster may have been spun up temporarily for testing purposes. To enable Anthos features on a Kubernetes cluster, whether on GCP or other location, you’ll need to register the cluster in an Anthos Environ, a unified organizational element across GCP, your Data Centers and other Cloud Providers. 
+
+Clusters grouped in an Environ follow a concept of sameness. As noted in the product documentation, an important concept in environs is the concept of sameness. This means that some Kubernetes objects such as clusters with the same name in different contexts are treated as the same thing. This normalization is done to make administering environ resources more tractable. It provides some strong guidance about how to set up namespaces, services, and identities.
+
+The fundamental example of sameness in an environ is namespace sameness. Namespaces with the same name in different clusters are considered the same by many components. Another way to think about this property is that a namespace is logically defined across an entire environ, even if the instantiation of the namespace exists only in a subset of the environ resources.
+
+![](../images/platform/environs-namespaces.png)
+
+
+Anthos Service Mesh and Ingress for Anthos use the concept of sameness of services within a namespace. Like namespace sameness, this implies that services with the same namespace and service name are considered to be the same service.
+
+![](../images/platform/environs-services.png)
 
 ### Task: Register With Anthos Hub
 To add a cluster to an Anthos Environ the following steps need to be performed:

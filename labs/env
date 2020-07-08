@@ -25,19 +25,11 @@ fi
 
 
 if [[ ${GH_TOKEN} == "" ]]; then
-    echo "\nNo Github token found. Please generate a token from the following URL and paste it below."
+    echo "" 
+    echo "No Github token found. Please generate a token from the following URL and paste it below."
     echo "https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo"
-    printf "Paste your token here and press enter: "
-    while IFS= read -r -s -n1 pass; do
-    if [[ -z $pass ]]; then
-        printf ''
-        break
-    else
-        printf '*'
-        GH_TOKEN+=$pass
-    fi
-    done
-    export GH_TOKEN=$GH_TOKEN
+    printf "Paste your token here and press enter: " && read ghtoken
+    export GH_TOKEN=${ghtoken}
 fi
 
 write_state

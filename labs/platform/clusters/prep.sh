@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Create config repo
 cp -R $BASE_DIR/resources/repos/hydrated-config $WORK_DIR

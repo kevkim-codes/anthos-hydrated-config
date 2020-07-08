@@ -10,3 +10,14 @@ cd $BASE_DIR
 
 # Create Terraform directory
 cp -R $BASE_DIR/resources/provision/start $WORK_DIR/tf
+
+
+
+gcloud services enable --async \
+    cloudresourcemanager.googleapis.com \
+    container.googleapis.com \
+    serviceusage.googleapis.com \
+    sourcerepo.googleapis.com \
+    iamcredentials.googleapis.com \
+    stackdriver.googleapis.com \
+    anthos.googleapis.com

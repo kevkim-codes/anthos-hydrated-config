@@ -13,7 +13,8 @@ cd ${REPO_PREFIX}-app-templates/${APP_LANG}-template
 find . -name kustomization.yaml -exec sed "s/namePrefix:.*/namePrefix: '${APP_NAME}'/g" {} \;
 find . -name kustomization.yaml -exec sed "s/  app:.*/  app: '${APP_NAME}'/g" {} \;
 git init
-gh repo create ${APP_NAME}
+$BASE_DIR/labs/common/gh.sh create ${APP_NAME}
+git remote add origin $GIT_BASE_URL/${APP_NAME}
 git add . && git commit -m "initial commit" && git push origin master
 cd $BASE_DIR
 rm -rf $WORK_DIR/${REPO_PREFIX}-app-templates

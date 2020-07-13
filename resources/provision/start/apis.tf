@@ -8,7 +8,7 @@ module "project-services" {
   version = "2.1.3"
 
   project_id  = data.google_client_config.current.project
-  disable_services_on_destroy=false
+  disable_services_on_destroy = false
   activate_apis = [
     "compute.googleapis.com",
     "iam.googleapis.com",

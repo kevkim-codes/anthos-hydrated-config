@@ -1,32 +1,20 @@
 
-# Enable APIs
-resource "google_project_service" "compute" {
-  project = data.google_client_config.current.project
-  service = "compute.googleapis.com"
 
-  disable_on_destroy  = false
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
-resource "google_project_service" "container" {
-  project = data.google_client_config.current.project
-  service = "container.googleapis.com"
-
-  disable_on_destroy  = false
-}
-
-resource "google_project_service" "cloudresourcemanager" {
-  project = data.google_client_config.current.project
-  service = "cloudresourcemanager.googleapis.com"
-
-  disable_on_destroy  = false
-}
 
 # Enable APIs
-resource "google_project_service" "anthos" {
-  project = data.google_client_config.current.project
-  service = "anthos.googleapis.com"
 
-  disable_on_destroy  = false
-  depends_on = [google_project_service.cloudresourcemanager]
+module "project-services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "2.1.3"
+
+  project_id  = data.google_client_config.current.project
+
+  activate_apis = [
+    "compute.googleapis.com",
+    "iam.googleapis.com",
+    "container.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "anthos.googleapis.com"
+
+  ]
 }

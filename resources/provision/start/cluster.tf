@@ -2,7 +2,7 @@
 # Cluster
 module "prod-primary" {
   name               = "${var.gke_name}-prod-primary"
-    project_id        = var.project_id
+    project_id        = module.project-services.project_id
   source  = "terraform-google-modules/kubernetes-engine/google"
   regional            = false
   region                  = var.default_region
@@ -24,7 +24,7 @@ resource "null_resource" "configure_kubectl_prod_primary" {
 # Provision Stage Cluster
 module "stage" {
   source                  = "terraform-google-modules/kubernetes-engine/google"
-  project_id        = var.project_id
+  project_id        = module.project-services.project_id
   name                    = "${var.gke_name}-stage"
   regional                = false
   region                  = var.default_region

@@ -48,8 +48,8 @@ In this task you’ll prepare your workspace for use in this lab. The commands b
 
 Run the setup steps
 ```shell
-source $BASE_DIR/labs/env
-source $BASE_DIR/labs/platform/clusters/prep.sh
+source ./labs/env
+$BASE_DIR/labs/platform/clusters/prep.sh
 ```
 
 
@@ -83,13 +83,13 @@ Review the excerpts from both of the files listed in the box below to understand
         ip_range_pods           = var.ip_range_pods
         ip_range_services       = var.ip_range_services
         zones                   = var.default_zone
-        #release_channel         = "RAPID"
+
         node_pools = [
             {
             name         = "default-node-pool"
             autoscaling  = false
             auto_upgrade = true
-            # ASM requires minimum 4 nodes and e2-standard-4
+
             node_count   = 4
             machine_type = "e2-standard-4"
             },

@@ -1,5 +1,5 @@
 module "acm-prod-primary" {
-  source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
+  source           = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/acm?ref=fix-gcloud-install"
   skip_gcloud_download = true
 
   project_id       = data.google_client_config.current.project

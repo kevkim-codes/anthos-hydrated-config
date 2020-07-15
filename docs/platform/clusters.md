@@ -1,9 +1,9 @@
 # Environments & Clusters
  
-Organizations are often challenged with the need to run workloads in different locations for a variety of reasons. Additionally administrators are tasked with enabling multiple teams with low friction platforms that allow teams to deploy rapidly throughout multiple life cycles.   Anthos incorporates multiple clusters across locations under one comprehensive platform, providing the ability to operate clusters across providers and datacenters, while reducing operational overhead. 
+Organizations are often challenged with the need to run workloads in different locations for a variety of reasons. Additionally platform administrators are tasked with enabling multiple teams with low friction platforms that allow teams to deploy rapidly throughout multiple life cycles. Anthos incorporates multiple clusters across locations under one comprehensive platform, providing the ability to operate clusters across providers and datacenters, while reducing operational overhead. 
 
 ### Objectives
-In this lab you’ll work with some of the fundamental concepts in Anthos related to creating clusters and grouping them into Environs within your projects.  
+In this tutorial you’ll work with some of the fundamental concepts in Anthos related to creating clusters and grouping them into Environs within your projects.  
 
 You’ll learn about:
 
@@ -12,22 +12,16 @@ You’ll learn about:
 - Registering Clusters through Hub & Environs
 
 
+
 ## Before you begin
 To get started with this lab you’ll need to install tooling, set a few variables and provision the environment. Follow the steps below to prepare your lab.
 
 ### Task: Install Tools
 
-This lab utilizes terraform to provision the base clusters and Anthos components. Additionally this lab implements GitOps patterns backed by a git repository. In this example you’ll integrate Anthos with GitHub repositories. To facilitate creation of the repositories the lab makes use of the GitHub command line tool. 
+This tutorial utilizes terraform to provision the base clusters and Anthos components. Additionally this tutorial implements GitOps patterns backed by a git repository. In this example you’ll integrate Anthos with GitHub repositories. To facilitate creation of the repositories the tutorial creates repositories on your behalf. A Github Personal Access token will be used. You will be prompted and guided through the process in the next step.  
 
-Install the following tools with the instructions provided in the links below. 
+If you’re using cloudshell these tools will already be installed and you can skip this step. If you’re running this elsewhere be sure to install [gcloud](https://cloud.google.com/sdk/docs/downloads-interactive), [terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) and [git](https://github.com/git-guides/install-git). 
 
-- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
-- [GitHub's cli gh](https://github.com/cli/cli)
-
-### Task: Enable Write Access to your GitHub Account
-In this series of labs you’ll be reading and writing to GitHub repositories. To ensure proper interactions within the series be sure you have enabled write access to your GitHub account from your command line.  [Follow the steps provided by GitHub](https://help.github.com/en/github/getting-started-with-github/set-up-git#next-steps-authenticating-with-github-from-git)
-
-If your organization requires use of 2fa with github please [review these instructions](https://help.github.com/en/github/authenticating-to-github/accessing-github-using-two-factor-authentication#using-two-factor-authentication-with-the-command-line)
 
 
 ### Task: Clone Lab Repository
@@ -35,7 +29,7 @@ If your organization requires use of 2fa with github please [review these instru
 Clone the repository onto your local computer and change into the directory.
 
 ```shell
-git clone sso://user/crgrant/anthos-workshop -b v2
+git clone https://github.com/cgrant/anthos-workshop -b v2
 cd anthos-workshop
 ```
 
@@ -45,21 +39,15 @@ Set global variables that are used throughout the workshop
 
 ```shell
 gcloud config set core/project YOUR_PROJECT #UPDATE WITH YOUR PROJECT
-export GITHUB_USERNAME=YOUR_USERNAME #UPDATE WITH YOUR ID
 ```
  
 ### Task: Prepare the workspace
 
 In this task you’ll prepare your workspace for use in this lab. The commands below will update your gcloud components and set some additional global variables used throughout the examples. It will also create a GitHub repository from assets stored in the resources directory. 
 
-Update gcloud components
-```shell
-gcloud components update --quiet
-```
 
 Run the setup steps
 ```shell
-gcloud components update --quiet
 source $BASE_DIR/labs/env
 source $BASE_DIR/labs/platform/clusters/prep.sh
 ```
@@ -85,17 +73,27 @@ Review the excerpts from both of the files listed in the box below to understand
     ```terraform
 
     module "prod-primary" {
-        name               = "${var.gke_name}-prod-primary"
-        project_id        = var.project_id
-        source  = "terraform-google-modules/kubernetes-engine/google"
-        regional            = false
+        source                  = "terraform-google-modules/kubernetes-engine/google"
+        name                    = "${var.gke_name}-prod-primary"
+        project_id              = module.project-services.project_id
+        regional                = false
         region                  = var.default_region
         network                 = var.network
         subnetwork              = var.subnetwork
         ip_range_pods           = var.ip_range_pods
         ip_range_services       = var.ip_range_services
-        zones             = var.default_zone
-
+        zones                   = var.default_zone
+        #release_channel         = "RAPID"
+        node_pools = [
+            {
+            name         = "default-node-pool"
+            autoscaling  = false
+            auto_upgrade = true
+            # ASM requires minimum 4 nodes and e2-standard-4
+            node_count   = 4
+            machine_type = "e2-standard-4"
+            },
+        ]
     }
     # Cluster Credentials
     resource "null_resource" "configure_kubectl_prod_primary" {
@@ -113,7 +111,7 @@ Review the excerpts from both of the files listed in the box below to understand
 
     # Enable Anthos Configuration Management
     module "acm-prod-primary" {
-        source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
+    source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
         skip_gcloud_download = true
 
         project_id       = data.google_client_config.current.project
@@ -127,13 +125,39 @@ Review the excerpts from both of the files listed in the box below to understand
         policy_dir       = "."
     }
 
-
     ```
 
     As you can see in the terraform script, we’re using the ACM submodule. This module requires a few key elements. The first section provides details about which GKE cluster you want to enable ACM on. In this case it’s passing in variables for cluster_name, location and cluster_endpoint provided by the GKE terraform module. 
 
     Specifically for the ACM module, you’ll also need to provide details about the git repository location to be used in the sync process. In this case values are provided for the acm_repo_location, utilizing the master branch and no subdirectory as noted by the “.” path for policy_dir. 
 
+=== "asm.tf"
+    ```terraform
+
+    # Enable Anthos Configuration Management
+    module "asm" {
+        source           = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/asm"
+        project_id       = data.google_client_config.current.project
+        cluster_name     = module.stage.name
+        location         = module.stage.location
+        cluster_endpoint = module.stage.endpoint
+    }
+
+    ```
+    This module utilizes a gke submodule specifically for installing ASM. Similar to the ACM module you’ll reference the cluster variables from the cluster module itself. This will implement correct dependency within terraform ensuring that the cluster has been created and is ready before trying to apply this module. 
+
+### Task: Add a Cluster (optional)
+
+In this step you'll attempt to create your own cluster. Inside `cluster.tf` try adding code to create a cluster called `prod-secondary` Don't add any ACM or ASM components at this stage though. If you complete this correctly, you should see 3 clusters following the next step. 
+
+To test your configuration, you can run terraform prepare with the script provided. 
+
+```shell
+cd $WORK_DIR/tf 
+./tf-prepare.sh
+```
+ 
+This will provide feedback about your configuration without actually applying any changes to your environment. Not only is it useful in understanding what changes your configurations will make but it also serves as a quick error check. 
 
 
 ### Task: Provision Resources
@@ -147,9 +171,10 @@ cd $WORK_DIR/tf
 
 This setup process will:
 
-- Create 3 clusters: prod-primary, prod-secondary, and stage
+- Create 2 clusters: prod-primary, and stage
+    - It will also create prod-secondary if you completed the previous optional task
 - Pull the contexts locally for each cluster so you can interact via kubectl
-- Install ACM on the 2 prod clusters. You’ll install ACM on stage in the next lab
+- Install ACM on the prod-primary cluster and ASM on the stage cluster
 
 This step will take ~5 minutes. 
 

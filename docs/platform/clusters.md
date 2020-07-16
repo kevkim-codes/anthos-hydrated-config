@@ -111,7 +111,8 @@ Review the excerpts from both of the files listed in the box below to understand
 
     # Enable Anthos Configuration Management
     module "acm-prod-primary" {
-    source           = "terraform-google-modules/kubernetes-engine/google//modules/acm"
+        source           = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/acm?ref=fix-gcloud-install"
+  
         skip_gcloud_download = true
 
         project_id       = data.google_client_config.current.project
@@ -150,11 +151,11 @@ Review the excerpts from both of the files listed in the box below to understand
 
 In this step you'll attempt to create your own cluster. Inside `cluster.tf` try adding code to create a cluster called `prod-secondary` Don't add any ACM or ASM components at this stage though. If you complete this correctly, you should see 3 clusters following the next step. 
 
-To test your configuration, you can run terraform prepare with the script provided. 
+To test your configuration, you can run terraform plan with the script provided. 
 
 ```shell
 cd $WORK_DIR/tf 
-./tf-prepare.sh
+./tf-plan.sh
 ```
  
 This will provide feedback about your configuration without actually applying any changes to your environment. Not only is it useful in understanding what changes your configurations will make but it also serves as a quick error check. 

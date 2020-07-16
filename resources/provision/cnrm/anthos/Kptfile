@@ -1,0 +1,31 @@
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+metadata:
+  name: anthos
+packageMetadata:
+  shortDescription: anthos bootstrap
+openAPI:
+  definitions:
+    io.k8s.cli.setters.gcloud.container.cluster:
+      x-k8s-cli:
+        setter:
+          name: gcloud.container.cluster
+          value: asm-cluster
+    io.k8s.cli.setters.gcloud.core.project:
+      x-k8s-cli:
+        setter:
+          name: gcloud.core.project
+          value: crg-somber-forest
+    io.k8s.cli.setters.gcloud.compute.location:
+      x-k8s-cli:
+        setter:
+          name: gcloud.compute.location
+          value: us-central1-c
+    io.k8s.cli.substitutions.clusterName:
+      x-k8s-cli:
+        substitution:
+          name: clusterName
+          pattern: ${gcloud.core.project}/us-central1-c/asm-cluster
+          values:
+          - marker: ${gcloud.core.project}
+            ref: '#/definitions/io.k8s.cli.setters.gcloud.core.project'

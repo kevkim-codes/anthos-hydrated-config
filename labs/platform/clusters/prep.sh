@@ -2,8 +2,7 @@
 
 
 # Tools
-mkdir -p $WORK_DIR/bin
-export PATH=$PATH:$WORK_DIR/bin:
+
 ## Install Kustomize
 if ! command -v kustomize 2>/dev/null; then
 	echo "Installing kustomize..."

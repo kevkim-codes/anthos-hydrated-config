@@ -17,7 +17,7 @@ if ! command -v kpt 2>/dev/null; then
     chmod +x kpt 
     mv ./kpt $WORK_DIR/bin
 fi
-
+export GIT_ASKPASS=$BASE_DIR/labs/common/ghp.sh
 # Create config repo
 cp -R $BASE_DIR/resources/repos/hydrated-config $WORK_DIR
 cd $WORK_DIR/hydrated-config

@@ -17,6 +17,8 @@ user=$GITHUB_USERNAME
 token=${GH_TOKEN}
 base=https://api.github.com
 
+export GIT_ASKPASS=$BASE_DIR/labs/common/ghp.sh
+
 
 if [[ $action == 'create' ]]; then
     # Create

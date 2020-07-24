@@ -24,7 +24,7 @@ if [[ ${GITHUB_USERNAME} == "" ]]; then
     printf "Github username: " && read ghusername
     export GITHUB_USERNAME=${ghusername}
 fi
-export GIT_BASE_URL=https://github.com/${GITHUB_USERNAME}
+export GIT_BASE_URL=https://${GITHUB_USERNAME}@github.com/${GITHUB_USERNAME}
 export ACM_REPO=${GIT_BASE_URL}/$REPO_PREFIX-hydrated-config
 
 if [[ ${GH_TOKEN} == "" ]]; then

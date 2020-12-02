@@ -5,3 +5,4 @@ terraform.tfstate.*
 *-creds.json
 workdir/
 _scratch/
+.DS_Store

@@ -1,0 +1,11 @@
+# cluster/namespace-reader.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: namespace-reader
+  annotations:
+    configmanagement.gke.io/cluster-selector: selector-env-prod
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "watch", "list"]

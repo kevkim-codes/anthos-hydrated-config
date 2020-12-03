@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  namespace: bank-of-anthos
+  # namespace: bank-of-anthos
 spec:
   selector:
     matchLabels:
